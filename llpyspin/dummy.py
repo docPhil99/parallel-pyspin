@@ -517,7 +517,7 @@ class DummyCameraPointer():
 
         class StreamBufferCountMode(DummyProperty):
 
-            def __init__(self, parent, min=None, max=None, val=PySpin.StreamBufferCountMode_Auto):
+            def __init__(self, parent, min=None, max=None, val=PySpin.StreamBufferCountMode_Manual):
                 super().__init__(parent, min, max, val)
 
             def SetValue(self, val):
