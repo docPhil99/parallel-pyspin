@@ -288,7 +288,7 @@ class MainProcess():
                     'StreamBufferHandlingMode',
                     'StreamBufferCountMode',
                     'ExposureAuto',
-                    'AcqusitionFrameRateEnable',
+                    'AcquisitionFrameRateEnable',
                     'ExposureTime',
                     'AcqusitionFrameRateEnable',
                     'AcquisitionFrameRate',
