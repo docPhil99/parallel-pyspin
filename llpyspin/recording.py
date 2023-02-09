@@ -6,7 +6,7 @@ import numpy as np
 import pathlib as pl
 import subprocess as sp
 import multiprocessing as mp
-
+from loguru import logger
 OPENCV_IMPORT_RESULT = False
 
 def import_opencv_module():
@@ -40,7 +40,7 @@ def locate_ffmpeg_binary():
     global FFMPEG_BINARY_FILEPATH
 
     # check if ffmpeg is installed
-    if sys.platform == "linux" or platform == "linux2":
+    if sys.platform == "linux" or sys.platform == "linux2":
         p = sp.Popen('which ffmpeg', stdout=sp.PIPE, shell=True)
     elif sys.platform == "win32":
         p = sp.Popen('where ffmpeg', stdout=sp.PIPE, shell=True)
@@ -128,7 +128,11 @@ class OpenCVVideoWriterChildProcess(VideoWriterChildProcess):
             codec = 'MJPG'
         else:
             codec = 'H264'
-
+        logger.debug(f'Using OpenCV with codec {codec} and colour {self.color}')
+        if self.color =='RGB8' or self.color == 'BGR8':
+            _colour = True
+        else:
+            _colour = False
         # create the video writer object
         fourcc = cv.VideoWriter_fourcc(*codec)
         writer = cv.VideoWriter(
@@ -136,7 +140,7 @@ class OpenCVVideoWriterChildProcess(VideoWriterChildProcess):
             fourcc,
             self.framerate,
             (self.width, self.height),
-            self.color
+            _colour
         )
 
         # main loop
@@ -174,7 +178,7 @@ class SpinnakerVideoWriterChildProcess(VideoWriterChildProcess):
             container.height = self.height
             container.width = self.width
         container.frameRate = self.framerate
-
+        logger.debug(f'Using Spinnaker VideoWriter with codec {container} and colour {self.color}')
         # initialize the writer
         writer = PySpin.SpinVideo()
         writer.Open(str(self.filename), container)
@@ -182,8 +186,10 @@ class SpinnakerVideoWriterChildProcess(VideoWriterChildProcess):
         while self.started.value:
             try:
                 image = self.q.get(block=False)
-                if self.color:
+                if self.color == 'RGB8':
                     format = PySpin.PixelFormat_RGB8
+                elif self.color == 'BGR8':
+                    format = PySpin.PixelFormat_BGR8
                 else:
                     format = PySpin.PixelFormat_Mono8
                 pointer = PySpin.Image_Create(self.width, self.height, 0, 0, format, image)
@@ -200,11 +206,13 @@ class FFmpegVideoWriterChildProcess(VideoWriterChildProcess):
     def run(self):
 
         # define the pixel format
-        if self.color:
+        if self.color == 'RGB8':
             pixel_format = 'rgb8'
+        elif self.color == 'BGR8':
+            pixel_format = 'bgr8'
         else:
             pixel_format = 'gray'
-
+        logger.debug(f'Using FFMpeg with pixel format {pixel_format}')
         # build a string of args for ffmpeg
         args = (
             'ffmpeg',
@@ -340,7 +348,7 @@ class SpinnakerVideoWriter(VideoWriter):
     def __init__(self, color=False):
         """
         """
-
+        logger.debug(f'Creating SpinnakerVideoWriter with colour {color}')
         super().__init__(color)
 
         return

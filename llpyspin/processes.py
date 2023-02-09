@@ -5,7 +5,7 @@ import PySpin
 import numpy as np
 import multiprocessing as mp
 from .dummy import DummyCameraPointer
-
+from loguru import logger
 # Method for identifying camera devices
 GETBY_DUMMY_CAMERA  = 0
 GETBY_SERIAL_NUMBER = 1
@@ -251,9 +251,17 @@ class MainProcess():
                 #
                 pointer.Init()
 
+                if kwargs['color'] == 'RGB8':
+                    col = PySpin.PixelFormat_RGB8
+                elif kwargs['color'] == 'BGR8':
+                    col = PySpin.PixelFormat_BGR8
+                else:
+                    col = PySpin.PixelFormat_Mono8
+
                 # target property values
                 values = [
-                    PySpin.PixelFormat_RGB8 if kwargs['color'] else PySpin.PixelFormat_Mono8,
+                    #PySpin.PixelFormat_RGB8 if kwargs['color'] else PySpin.PixelFormat_Mono8,
+                    col,
                     PySpin.AcquisitionMode_Continuous,
                     PySpin.StreamBufferHandlingMode_NewestOnly,
                     PySpin.StreamBufferCountMode_Manual,
@@ -339,6 +347,7 @@ class MainProcess():
 
         # NOTE: It's very important to reference the "_color" attribute and not
         #       invoke the "color" property's getter (see line below)
+        logger.debug(f'_colour {self._color}')
         result, output, message = f(main=self, color=self._color)
 
         self._framerate = output['framerate']
@@ -727,7 +736,9 @@ class MainProcess():
         def f(child, pointer, **kwargs):
             format = pointer.PixelFormat.GetValue()
             if format == PySpin.PixelFormat_RGB8:
-                result, output, message = True, True, ''
+                result, output, message = True, 'RGB8', ''
+            if format == PySpin.PixelFormat_BGR8:
+                result, output, message = True, 'BGR8', ''
             elif format == PySpin.PixelFormat_Mono8:
                 result, output, message = True, False, ''
             else:
@@ -743,8 +754,10 @@ class MainProcess():
         if self.locked:
             raise CameraError(f'Acquisition lock is engaged')
 
-        if value:
+        if value=='RGB8':
             format = PySpin.PixelFormat_RGB8
+        elif value=='BGR8':
+            format = PySpin.PixelFormat_BGR8
         else:
             format = PySpin.PixelFormat_Mono8
 
@@ -766,6 +779,7 @@ class MainProcess():
 
         result, output, message = f(main=self, value=value)
         if result:
+            logger.debug(f'Returned colour val {value}')
             self._color = value
 
     # width (read-only)

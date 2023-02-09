@@ -4,7 +4,13 @@ This package provides another layer of abstraction on top of the Python wrapper 
 1. Parallel operation of cameras via the [multiprocessing](https://docs.python.org/2/library/multiprocessing.html) package
 2. Abstraction of the procedure for configuring multiple cameras for synchronous video acquisition
 
-For questions or general correspondence please send an email to hunt.brian.joshua@gmail.com.
+A fork
+
+# CHANGELOG by @docPhil99
+
+* Changed colour flag to RGB8, BGR8, and Mono8
+
+
 
 # Installation #
 ### Installing parallel-pyspin ###

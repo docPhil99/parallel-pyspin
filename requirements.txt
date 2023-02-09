@@ -1,3 +1,7 @@
 dill
 pyyaml
 numpy
+scipy
+# opencv is optional
+#opencv-python
+loguru

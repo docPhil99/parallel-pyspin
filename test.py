@@ -2,19 +2,24 @@ from llpyspin import primary
 from time import sleep
 from loguru import logger
 
-nums = [ 21377661,
-    #21293195,21293202,
+# disable logging in the llpyspin if you want
+#logger.disable('llpyspin')
+
+nums = [ #21377661,
+    21293195,
+    # 21293202,
         #21377663,
-       # 21293198,21293196
+       # 21293198,
+         21293196,
           ]
 cams =  []
 
 for ind,num in enumerate(nums):
     print(f'{ind} : {num}')
     try:
-        cam1 = primary.PrimaryCamera(serial_number=num)
+        cam1 = primary.PrimaryCamera(serial_number=num, color='BGR8')
         cam1.framerate = 15
-        cam1.prime(f'/home/habiba/tmp/prime{ind}.mp4')
+        cam1.prime(f'/home/phil/tmp/prime{ind}.mp4', backend='spinnaker')
         cams.append(cam1)
     except:
         logger.exception(f'Cannot start {ind}: {num}')

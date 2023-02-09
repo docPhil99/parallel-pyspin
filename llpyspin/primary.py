@@ -7,7 +7,7 @@ import numpy as np
 import pathlib as pl
 import multiprocessing as mp
 from datetime import datetime as dt
-
+from loguru import logger
 # relative imports
 from .dummy import DummyCameraPointer
 from .processes import MainProcess, ChildProcess, CameraError, queued, GETBY_DUMMY_CAMERA, GETBY_DEVICE_INDEX, GETBY_SERIAL_NUMBER
@@ -43,7 +43,8 @@ class PrimaryCamera(MainProcess):
         ):
         """
         """
-
+        logger.debug(f'Creating primary camera serial_number {serial_number}, device_index {device_index}, '
+                     f'nickname {nickname}, dummy {dummy}, color {color}')
         super().__init__(serial_number, device_index, nickname, dummy, color)
         self._spawn_child_process(PrimaryCameraChildProcess)
         self._primed = False
@@ -112,6 +113,7 @@ class PrimaryCamera(MainProcess):
         #        output queue will cause the main process to hang.
         def f(child, pointer, **kwargs):
 
+            logger.debug(f"kwargs {kwargs}")
             #
             if pointer.IsValid() is False:
                 return (False, None, 'Camera pointer object is not valid')
