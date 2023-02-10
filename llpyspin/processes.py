@@ -37,6 +37,7 @@ def queued(f):
         main._child.iq.put(item)
         result, output, message = main._child.oq.get()
         if result is False:
+            logger.error(message)
             raise CameraError(message)
         else:
             return result, output, message
@@ -269,6 +270,7 @@ class MainProcess():
                     False,
                     3000,
                     True,
+                   # 'Off',
                     30,
                     2,
                     2
@@ -284,6 +286,7 @@ class MainProcess():
                     pointer.AcquisitionFrameRateEnable,
                     pointer.ExposureTime,
                     pointer.AcquisitionFrameRateEnable,
+                    #pointer.AcquisitionFrameRateAuto,
                     pointer.AcquisitionFrameRate,
                     pointer.BinningHorizontal,
                     pointer.BinningVertical
@@ -299,6 +302,7 @@ class MainProcess():
                     'AcquisitionFrameRateEnable',
                     'ExposureTime',
                     'AcqusitionFrameRateEnable',
+                   # 'AcquisitionFrameRateAuto',
                     'AcquisitionFrameRate',
                     'BinningHorizontal',
                     'BinningVertical'
@@ -308,12 +312,14 @@ class MainProcess():
                 for p, v, n in zip(properties, values, names):
                     if p.GetAccessMode() != PySpin.RW:
                         message = f'Property is not readable and/or writeable: {n}'
-                        return False, None, message
+                        logger.error(message)
+                        #return False, None, message
                     try:
                         p.SetValue(v)
                     except PySpin.SpinnakerException:
                         message = f'Failed to set {n} to {v}'
-                        return False, None, message
+                        logger.error(message)
+                        #return False, None, message
 
                 #
                 roi = (
@@ -483,7 +489,11 @@ class MainProcess():
                     return False, None, message
 
         # call
-        result, output, message = f(main=self, value=value)
+        result = False
+        try:
+            result, output, message = f(main=self, value=value)
+        except:
+            logger.error(f'Failed to set frame rate')
 
         # update data
         if result:
